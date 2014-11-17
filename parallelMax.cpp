@@ -4,54 +4,53 @@
 // ARE COMPILER OPTIMIZATIONS ALLOWED!?!?!? -O3? 
 // Change order by which elements are added to global buffer 
 // 	try to take elements from the from of queue rather than those that would have been 
-//	added to the back. 
+//	added to the back.
 
 #include "header.h"
 
-using namespace std; 
+using namespace std;
 
 int main()
 {
-	int threads = omp_get_num_procs(); 	
+	int threads = omp_get_num_procs();
 	//int threads = 2;
 	omp_set_num_threads(threads);
 
-	// Vars to be used  
+	// Vars to be used
 	// double intervalSpan = END_B - START_A;
 	// double chunkSize = intervalSpan/threads;
 	double chunkSize = (END_B - START_A)/threads;
 
-	printf("\nNumber of threads: %d\n", threads); 	
+	printf("\nNumber of threads: %d\n", threads);
 
-	global_initBuffer(); 
-	bool * global_finished = new bool[threads]; 
+	global_initBuffer();
+	bool * global_finished = new bool[threads];
 	for(int i=0; i<threads; i++)
 		global_finished[i] = false;
 	
-	#pragma omp parallel 
+	#pragma omp parallel
 	{
 		// Init local variables
-		//double local_max = 0; 
-		double local_buffer[LOCAL_BUFF_SIZE]; 
+		double local_buffer[LOCAL_BUFF_SIZE];
 		double local_c = 0;
-		double local_d = 0; 
-		int local_head = 0; 
-		int local_tail = 0; 
-		int local_status = STATUS_EMPTY; 
+		double local_d = 0;
+		int local_head = 0;
+		int local_tail = 0;
+		int local_status = STATUS_EMPTY;
 	
 		// Add init interval to queue
-		int local_threadNum = omp_get_thread_num(); 
+		int local_threadNum = omp_get_thread_num();
 		local_qWork(local_threadNum*chunkSize+START_A, (local_threadNum+1)*chunkSize+START_A, local_buffer, &local_head, &local_tail, &local_status);
 
 		// Print each thread's interval
-		//printf("Thread %d: [%f, %f]\n", local_threadNum, local_threadNum*chunkSize+START_A, (local_threadNum+1)*chunkSize+START_A); 
+		//printf("Thread %d: [%f, %f]\n", local_threadNum, local_threadNum*chunkSize+START_A, (local_threadNum+1)*chunkSize+START_A);
 		
-		int debugCount = 0; 
+		int debugCount = 0;
 
 		bool lContinue = true;
 		while(lContinue)	
 		{
-			/*
+			
 			// FOR DEBUGGING
 			debugCount++; 
 			if(debugCount == DEBUG_FREQ)
@@ -61,7 +60,7 @@ int main()
 				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", local_threadNum, local_status, spaceLeft(LOCAL_BUFF_SIZE, local_head, local_tail, local_status), global_max, intervalLeft(END_B-START_A, local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status), averageSubintervalSize(local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status));
 				debugCount = 0; 
 			}
-			*/
+			
 			bool cont = false;	
 			// Get work from a queue
 			if(local_status != STATUS_EMPTY)
