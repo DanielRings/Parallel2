@@ -1,2 +1,2 @@
-alexandrian: parallelMax.cpp header.cpp header.h
-	g++ parallelMax.cpp -o alexandrian header.cpp -fopenmp -g 
+alexandrian: parallelMax.cpp helperfunctions.cpp helperfunctions.h
+	g++ parallelMax.cpp -o alexandrian helperfunctions.cpp -fopenmp -g 
