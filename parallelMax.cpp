@@ -12,20 +12,21 @@ using namespace std;
 
 int main()
 {
-	int numThreads = omp_get_num_procs(); 	
-	//int numThreads = 2;
-	omp_set_num_threads(numThreads);
+	int threads = omp_get_num_procs(); 	
+	//int threads = 2;
+	omp_set_num_threads(threads);
 
 	// Vars to be used  
-	double intervalSpan = END_B - START_A;
-	double chunkSize = intervalSpan/numThreads;
+	// double intervalSpan = END_B - START_A;
+	// double chunkSize = intervalSpan/threads;
+	double chunkSize = (END_B - START_A)/threads;
 
-	//printf("\nNumber of threads: %d\n", numThreads); 	
+	printf("\nNumber of threads: %d\n", threads); 	
 
 	global_initBuffer(); 
-	bool * global_doneArray = new bool[numThreads]; 
-	for(int i=0; i<numThreads; i++)
-		global_doneArray[i] = false;
+	bool * global_finished = new bool[threads]; 
+	for(int i=0; i<threads; i++)
+		global_finished[i] = false;
 	
 	#pragma omp parallel 
 	{
@@ -67,14 +68,14 @@ int main()
 			{
 				// Local buffer still has work so we get some from there
 				local_deqWork(&local_c, &local_d, local_buffer, &local_head, &local_tail, &local_status);
-				global_doneArray[local_threadNum] = false; 
+				global_finished[local_threadNum] = false; 
 				cont = true; 
 			}
 			
 			else
 			{
-				global_doneArray[local_threadNum] = true; 
-				while(!allDone(global_doneArray, numThreads) && !cont)
+				global_finished[local_threadNum] = true; 
+				while(!allDone(global_finished, threads) && !cont)
 				{
 					if(global_status != STATUS_EMPTY)
 					{
@@ -83,7 +84,7 @@ int main()
 				}
 				if(cont)
 				{
-					global_doneArray[local_threadNum] = false; 
+					global_finished[local_threadNum] = false; 
 				}
 			}
 		
@@ -134,10 +135,10 @@ int main()
 			}
 		}
 		
-		global_doneArray[local_threadNum] = true; 	
+		global_finished[local_threadNum] = true; 	
 	} // END PARALLEL 
 
-	//delete[] global_doneArray;
+	//delete[] global_finished;
 	printf("GlobalMax = %2.30f\n", global_max); 
-	return 0; 	 
+	return 0;
 }
