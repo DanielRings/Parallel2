@@ -6,7 +6,7 @@
 // 	try to take elements from the from of queue rather than those that would have been 
 //	added to the back.
 
-#include "header.h"
+#include "helperfunctions.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ int main()
 
 	printf("\nNumber of threads: %d\n", threads);
 
-	global_initBuffer();
+	gInitBuffer();
 	bool * global_finished = new bool[threads];
 	for(int i=0; i<threads; i++)
 		global_finished[i] = false;
@@ -36,7 +36,7 @@ int main()
 		double local_d = 0;
 		int local_head = 0;
 		int local_tail = 0;
-		int local_status = STATUS_EMPTY;
+		int local_status = 0;
 	
 		// Add init interval to queue
 		int local_threadNum = omp_get_thread_num();
@@ -56,14 +56,14 @@ int main()
 			if(debugCount == DEBUG_FREQ)
 			{
 				//printBuff(local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, 10); 
-				printf("GlobalSpaceLeft: %d\t", spaceLeft(GLOBAL_BUFF_SIZE, global_head, global_tail, global_status));
-				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", local_threadNum, local_status, spaceLeft(LOCAL_BUFF_SIZE, local_head, local_tail, local_status), global_max, intervalLeft(END_B-START_A, local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status), averageSubintervalSize(local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status));
+				printf("GlobalSpaceLeft: %d\t", spaceLeft(GLOBAL_BUFF_SIZE, gHead, gTail, gStatus));
+				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", local_threadNum, local_status, spaceLeft(LOCAL_BUFF_SIZE, local_head, local_tail, local_status), gMax, intervalLeft(END_B-START_A, local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status), averageSubintervalSize(local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status));
 				debugCount = 0; 
 			}
 			
 			bool cont = false;	
 			// Get work from a queue
-			if(local_status != STATUS_EMPTY)
+			if(local_status != 0)
 			{
 				// Local buffer still has work so we get some from there
 				local_deqWork(&local_c, &local_d, local_buffer, &local_head, &local_tail, &local_status);
@@ -74,11 +74,11 @@ int main()
 			else
 			{
 				global_finished[local_threadNum] = true; 
-				while(!allDone(global_finished, threads) && !cont)
+				while(!allThreadsFinished(global_finished, threads) && !cont)
 				{
-					if(global_status != STATUS_EMPTY)
+					if(gStatus != 0)
 					{
-						cont = global_safeWorkBuffer(FUN_DEQUEUE, &local_c, &local_d, 0, 0);
+						cont = gWorkBuffer(FUN_DEQUEUE, &local_c, &local_d, 0, 0);
 					}
 				}
 				if(cont)
@@ -90,9 +90,9 @@ int main()
 			if(cont)
 			{	
 				// Check if possible larger
-				if(validInterval(global_max, local_c, local_d))
+				if(intervalIsValid(gMax, local_c, local_d))
 				{
-					global_setMax(f(local_c), f(local_d)); 
+					gSetMax(f(local_c), f(local_d)); 
 					
 					// IF FULL, SEND WORK TO GLOBAL BUFF AT A RATE DETERMINED BY A CONSTANT
 
@@ -100,10 +100,10 @@ int main()
 					if(spaceLeft(LOCAL_BUFF_SIZE, local_head, local_tail, local_status) == 2)
 					{
 						// Global buffer is full too - so we shrink the current interval instead of splitting it
-						if(global_status == STATUS_FULL)
+						if(gStatus == 2)
 						{
 							// NEED TO FIX THIS FUNCTION BELOW
-							shrinkInterval(global_max, &local_c, &local_d);
+							narrowInterval(gMax, &local_c, &local_d);
 							// Queue up shrunken interval back into local buffer
 							local_qWork(local_c, local_d, local_buffer, &local_head, &local_tail, &local_status); 
 						}
@@ -113,9 +113,9 @@ int main()
 							double pD = ((local_d-local_c)/2)+local_c;
 							double pC2 = ((local_d-local_c)/2)+local_c;
 							double pD2 = local_d; 
-							if(!global_safeWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
+							if(!gWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
 							{
-								shrinkInterval(global_max, &local_c, &local_d);
+								narrowInterval(gMax, &local_c, &local_d);
 								local_qWork(local_c, local_d, local_buffer, &local_head, &local_tail, &local_status); 
 							}
 								
@@ -138,6 +138,6 @@ int main()
 	} // END PARALLEL 
 
 	//delete[] global_finished;
-	printf("GlobalMax = %2.30f\n", global_max); 
+	printf("GlobalMax = %2.30f\n", gMax); 
 	return 0;
 }

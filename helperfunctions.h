@@ -2,19 +2,18 @@
 #define HEADER_H
 
 #include <stdio.h>
-#include <math.h>
-#include <omp.h>
 #include <stdlib.h>
 #include <iostream>
+#include <math.h>
+#include <omp.h>
 
 #define START_A 1
 #define END_B 100
 #define EPSILON 0.000001 // 10^-6
-//#define EPSILON 0.0	// FOR DEBUGGING
 #define SLOPE 12
 #define GLOBAL_BUFF_SIZE 1000
 #define LOCAL_BUFF_SIZE 1000
-#define DEBUG_FREQ 1000
+#define DEBUG_FREQ 10
 
 // For status of buffers
 #define STATUS_EMPTY 0
@@ -28,14 +27,14 @@
 
 
 // Global Stuff
-extern double global_max; 
-extern double * global_buffer;
-extern int global_head; 
-extern int global_tail; 
-extern int global_status; 
+extern double gMax; 
+extern double * gBuffer;
+extern int gHead; 
+extern int gTail; 
+extern int gStatus; 
 
 // Initializes the global variables needed for the buffer
-void global_initBuffer();
+void gInitBuffer();
 
 // Function we want to find the maximum of
 double f(double x);
@@ -46,7 +45,7 @@ bool local_qWork(double c, double d, double * buffer, int * head, int * tail, in
 bool local_deqWork(double * c, double * d, double * buffer, int * head, int * tail, int * status);
 
 // Global Circular Queue 
-bool global_safeWorkBuffer(int function, double * c, double * d, double c2, double d2);
+bool gWorkBuffer(int function, double * c, double * d, double c2, double d2);
 
 // Gives front value but does not pop it off the queue
 bool local_peek(double * c, double * d, double * buffer, int * head, int * tail, int * status);
@@ -55,19 +54,19 @@ bool local_peek(double * c, double * d, double * buffer, int * head, int * tail,
 bool local_setMax(double * currentMax, double fc, double fd);
 
 // Returns true only if max changed
-bool global_setMax(double fc, double fd);
+bool gSetMax(double fc, double fd);
 
 // Returns true only if it is possible to get a higher value in this interval
-bool validInterval(double currentMax, double c, double d);
+bool intervalIsValid(double currentMax, double c, double d);
 
 // Attempts to rid itself of a piece of the interval handed to it
-bool shrinkInterval(double currentMax, double * c, double * d);
+bool narrowInterval(double currentMax, double * c, double * d);
 
 // Returns space left in buffer 
 int spaceLeft(int bufferSize, int head, int tail, int status);
 
 // Returns true if all processors are done 
-bool allDone(bool * doneArr, int size);
+bool allThreadsFinished(bool * doneArr, int size);
 
 // Returns the amount of the remaining interval represented in the buffer 
 // as a percentage

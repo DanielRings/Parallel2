@@ -1,20 +1,20 @@
-#include "header.h"
+#include "helperfunctions.h"
 
 
 // Global Stuff
-double global_max; 
-double * global_buffer;
-int global_head; 
-int global_tail; 
-int global_status; 
+double gMax; 
+double * gBuffer;
+int gHead; 
+int gTail; 
+int gStatus; 
 
-void global_initBuffer()
+void gInitBuffer()
 {
-	global_max = 0;  
-	global_buffer = new double[GLOBAL_BUFF_SIZE]; 
-	global_head = 0; 
-	global_tail = 0; 
-	global_status = STATUS_EMPTY; 
+	gMax = 0;  
+	gBuffer = new double[GLOBAL_BUFF_SIZE]; 
+	gHead = 0; 
+	gTail = 0; 
+	gStatus = 0; 
 
 }
 
@@ -46,7 +46,7 @@ bool local_qWork(double c, double d, double * buffer, int * head, int * tail, in
 			printf(" OUTOUTOUTOUT");
 		}
 	}
-	if(*status == STATUS_FULL)
+	if(*status == 2)
 	{
 		return false;
 	}
@@ -57,9 +57,9 @@ bool local_qWork(double c, double d, double * buffer, int * head, int * tail, in
 		buffer[*tail+1] = d; 
 		*tail = (*tail+2)%LOCAL_BUFF_SIZE;  
 		if(*tail == *head)
-			*status = STATUS_FULL;
+			*status = 2;
 		else
-			*status = STATUS_MID; 
+			*status = 1; 
 
 		return true; 
 	}
@@ -74,7 +74,7 @@ bool local_deqWork(double * c, double * d, double * buffer, int * head, int * ta
 			printf(" OUTOUTOUTOUT");
 		}
 	}
-	if(*status == STATUS_EMPTY)
+	if(*status == 0)
 	{
 		return false;
 	}
@@ -85,9 +85,9 @@ bool local_deqWork(double * c, double * d, double * buffer, int * head, int * ta
 		*d = buffer[*head+1]; 
 		*head = (*head+2)%LOCAL_BUFF_SIZE;  
 		if(*tail == *head)
-			*status = STATUS_EMPTY;
+			*status = 0;
 		else
-			*status = STATUS_MID; 
+			*status = 1; 
 
 		return true; 
 	}
@@ -95,7 +95,7 @@ bool local_deqWork(double * c, double * d, double * buffer, int * head, int * ta
 
 
 // Global Circular Queue 
-bool global_safeWorkBuffer(int function, double * c, double * d, double c2, double d2)
+bool gWorkBuffer(int function, double * c, double * d, double c2, double d2)
 {
 	bool ret = true; 
 	#pragma omp critical
@@ -103,18 +103,18 @@ bool global_safeWorkBuffer(int function, double * c, double * d, double c2, doub
 		// Dequeue function
 		if(function == FUN_DEQUEUE)
 		{
-			if(global_status == STATUS_EMPTY)
+			if(gStatus == 0)
 				ret = false;
 			else
 			{
 				// Get from circular buffer
-				*c = global_buffer[global_head];
-				*d = global_buffer[global_head+1]; 
-				global_head = (global_head+2)%GLOBAL_BUFF_SIZE;  
-				if(global_tail == global_head)
-					global_status = STATUS_EMPTY;
+				*c = gBuffer[gHead];
+				*d = gBuffer[gHead+1]; 
+				gHead = (gHead+2)%GLOBAL_BUFF_SIZE;  
+				if(gTail == gHead)
+					gStatus = 0;
 				else
-					global_status = STATUS_MID; 
+					gStatus = 1; 
 			
 			}
 
@@ -122,7 +122,7 @@ bool global_safeWorkBuffer(int function, double * c, double * d, double c2, doub
 		// Insert into buffer
 		else
 		{
-			if(global_status == STATUS_FULL)
+			if(gStatus == 2)
 			{
 				ret = false;
 			}
@@ -131,14 +131,14 @@ bool global_safeWorkBuffer(int function, double * c, double * d, double c2, doub
 				// Check if inserting two intervals
 				if(function == FUN_DOUBLE_Q)
 				{
-					if(spaceLeft(GLOBAL_BUFF_SIZE, global_head, global_tail, global_status) >= 4)
+					if(spaceLeft(GLOBAL_BUFF_SIZE, gHead, gTail, gStatus) >= 4)
 					{
 						// Insert both intervals
-						global_buffer[global_tail] = *c;
-						global_buffer[global_tail+1] = *d; 
-						global_buffer[global_tail+2] = c2;
-						global_buffer[global_tail+3] = d2; 
-						global_tail = (global_tail+4)%GLOBAL_BUFF_SIZE;  
+						gBuffer[gTail] = *c;
+						gBuffer[gTail+1] = *d; 
+						gBuffer[gTail+2] = c2;
+						gBuffer[gTail+3] = d2; 
+						gTail = (gTail+4)%GLOBAL_BUFF_SIZE;  
 					}
 					else
 					{
@@ -149,15 +149,15 @@ bool global_safeWorkBuffer(int function, double * c, double * d, double c2, doub
 				else
 				{
 					// Already checked to make sure it is not full so insert
-					global_buffer[global_tail] = *c;
-					global_buffer[global_tail+1] = *d; 
-					global_tail = (global_tail+2)%GLOBAL_BUFF_SIZE;  
+					gBuffer[gTail] = *c;
+					gBuffer[gTail+1] = *d; 
+					gTail = (gTail+2)%GLOBAL_BUFF_SIZE;  
 				}
 				// Add to circular buffer
-				if(global_tail == global_head)
-					global_status = STATUS_FULL;
+				if(gTail == gHead)
+					gStatus = 2;
 				else
-					global_status = STATUS_MID; 
+					gStatus = 1; 
 			}
 		}
 	} // End Critical Section
@@ -168,7 +168,7 @@ bool global_safeWorkBuffer(int function, double * c, double * d, double c2, doub
 // Gives front value but does not pop it off the queue
 bool local_peek(double * c, double * d, double * buffer, int * head, int * tail, int * status)
 {
-	if(*status == STATUS_EMPTY)
+	if(*status == 0)
 	{
 		return false;
 	}
@@ -195,18 +195,18 @@ bool local_setMax(double * currentMax, double fc, double fd)
 }
 
 // Returns true only if max changed
-bool global_setMax(double fc, double fd)
+bool gSetMax(double fc, double fd)
 {
 	bool ret = true; 
 	#pragma omp critical
 	{
-		if(global_max + EPSILON < fc)
+		if(gMax + EPSILON < fc)
 		{
-			global_max = fc; 
+			gMax = fc; 
 		}
-		else if(global_max + EPSILON < fd)
+		else if(gMax + EPSILON < fd)
 		{
-			global_max = fd; 
+			gMax = fd; 
 		}
 		else
 		{ 
@@ -217,7 +217,7 @@ bool global_setMax(double fc, double fd)
 }
 
 // Returns true only if it is possible to get a higher value in this interval
-bool validInterval(double currentMax, double c, double d)
+bool intervalIsValid(double currentMax, double c, double d)
 {
 	if((d - c) < EPSILON)
 		return false; 
@@ -227,7 +227,7 @@ bool validInterval(double currentMax, double c, double d)
 		return false;
 }
 
-// Does same this as validInterval() but also updates the max
+// Does same this as intervalIsValid() but also updates the max
 bool validIntervalAndMax(double * currentMax, double c, double d)
 {
 	double fC = f(c); 
@@ -248,14 +248,14 @@ bool validIntervalAndMax(double * currentMax, double c, double d)
 
 
 // Attempts to rid itself of a piece of the interval handed to it
-bool shrinkInterval(double currentMax, double * c, double * d)
+bool narrowInterval(double currentMax, double * c, double * d)
 {
 	// Save the original values
 	double C = *c; 
 	double D = *d; 
 	
 	// Shrink from the left side
-	while(validInterval(currentMax, C, D))
+	while(intervalIsValid(currentMax, C, D))
 	{
 		//printf("stuck"); 
 		D = (D - C)/2 + C; 
@@ -267,7 +267,7 @@ bool shrinkInterval(double currentMax, double * c, double * d)
 	D = *d; 	
 
 	// Shrink from the right side
-	while(validInterval(currentMax, C, D))
+	while(intervalIsValid(currentMax, C, D))
 	{
 		C = (D - C)/2 + C; 
 	}
@@ -283,9 +283,9 @@ bool shrinkInterval(double currentMax, double * c, double * d)
 // Returns space left in buffer 
 int spaceLeft(int bufferSize, int head, int tail, int status)
 {
-	if(status == STATUS_EMPTY)
+	if(status == 0)
 		return bufferSize;
-	else if(status == STATUS_FULL)
+	else if(status == 2)
 		return 0; 
 	else
 	{
@@ -299,9 +299,9 @@ int spaceLeft(int bufferSize, int head, int tail, int status)
 // THIS VERSION ONLY WORKS WITH STACK VERSION OF q/deqWork
 /*int spaceLeft(int bufferSize, int head, int tail, int status)
 {
-	if(status == STATUS_EMPTY)
+	if(status == 0)
 		return bufferSize;
-	else if(status == STATUS_FULL)
+	else if(status == 2)
 		return 0; 
 	else
 	{
@@ -310,7 +310,7 @@ int spaceLeft(int bufferSize, int head, int tail, int status)
 }*/
 
 // Returns true if all processors are done
-bool allDone(bool * doneArr, int size)
+bool allThreadsFinished(bool * doneArr, int size)
 {
 	for(int i=0; i<size; i++)
 	{
@@ -326,7 +326,7 @@ bool allDone(bool * doneArr, int size)
 // FOR DEBUGGING
 double intervalLeft(double originalSize, double * buffer, int bufferSize, int head, int tail, int status)
 {
-	if(status == STATUS_EMPTY)
+	if(status == 0)
 		return 0; 
 	else 
 	{
@@ -345,7 +345,7 @@ double intervalLeft(double originalSize, double * buffer, int bufferSize, int he
 // FOR DEBUGGING ONLY
 double averageSubintervalSize(double * buffer, int bufferSize, int head, int tail, int status)
 {
-	if(status == STATUS_EMPTY)
+	if(status == 0)
 		return 0; 
 	else
 	{
