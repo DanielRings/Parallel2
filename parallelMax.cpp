@@ -16,10 +16,10 @@ int main(int argc, char** argv)
 		cout << "Wrong number of arguments\n";
 		return 0;
 	}
-	const double A = strtod(argv[1], NULL);
-	const double B = strtod(argv[2], NULL);
-	const double E = strtod(argv[3], NULL);
-	const double S = strtod(argv[4], NULL);
+	A = strtod(argv[1], NULL);
+	B = strtod(argv[2], NULL);
+	E = strtod(argv[3], NULL);
+	S = strtod(argv[4], NULL);
 	if(A >= B || E <= 0 || S <= 0){
 		cout << "Bad arguments\n";
 		return 0;
@@ -95,9 +95,9 @@ int main(int argc, char** argv)
 		
 			if(cont)
 			{
-				if(intervalIsValid(gMax, lC, lD, S, E))
+				if(intervalIsValid(gMax, lC, lD))
 				{
-					gSetMax(f(lC), f(lD), E);
+					gSetMax(f(lC), f(lD));
 					
 					if(spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus) == 2)
 					{
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 						if(gStatus == 2)
 						{
 							// NEED TO FIX THIS FUNCTION BELOW
-							narrowInterval(gMax, &lC, &lD, S, E);
+							narrowInterval(gMax, &lC, &lD);
 							// Queue up shrunken interval back into local buffer
 							lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 						}
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 							double pD2 = lD; 
 							if(!gWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
 							{
-								narrowInterval(gMax, &lC, &lD, S, E);
+								narrowInterval(gMax, &lC, &lD);
 								lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 							}
 								

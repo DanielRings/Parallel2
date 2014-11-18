@@ -2,6 +2,10 @@
 
 
 // Global Stuff
+double const A;
+double const B;
+double const S;
+double const E;
 double gMax; 
 double *gBuffer;
 int gHead; 
@@ -10,7 +14,7 @@ int gStatus;
 
 void gInitBuffer()
 {
-	gMax = 0;  
+	gMax = 0;
 	gBuffer = new double[GLOBAL_BUFF_SIZE]; 
 	gHead = 0; 
 	gTail = 0; 
@@ -90,17 +94,17 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 }
 
 // Returns true only if max changed
-bool gSetMax(double fc, double fd, double e)
+bool gSetMax(double fc, double fd)
 {
 	bool ret = false; 
 	#pragma omp critical
 	{
-		if(gMax + e < fc)
+		if(gMax + E < fc)
 		{
 			gMax = fc;
 			ret = true;
 		}
-		if(gMax + e < fd)
+		if(gMax + E < fd)
 		{
 			gMax = fd;
 			ret = true;
@@ -185,25 +189,25 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 }
 
 // Returns true only if it is possible to get a higher value in this interval
-bool intervalIsValid(double currentMax, double c, double d, double s, double e)
+bool intervalIsValid(double currentMax, double c, double d)
 {
-	if(SLOPE * (d - c) < EPSILON)
+	if(S * (d - c) < E)
 		return false; 
-	if(((f(c) + f(d) + SLOPE*(d - c))/2) > (currentMax + EPSILON))
+	if(((f(c) + f(d) + S*(d - c))/2) > (currentMax + E))
 		return true; 
 	else
 		return false;
 }
 
 // Attempts to rid itself of a piece of the interval handed to it
-bool narrowInterval(double currentMax, double *c, double *d, double s, double e)
+bool narrowInterval(double currentMax, double *c, double *d)
 {
 	// Save the original values
 	double C = *c; 
 	double D = *d; 
 	
 	// Shrink from the left side
-	while(intervalIsValid(currentMax, C, D, s, e))
+	while(intervalIsValid(currentMax, C, D))
 	{
 		//printf("stuck"); 
 		D = (D - C)/2 + C; 
@@ -215,7 +219,7 @@ bool narrowInterval(double currentMax, double *c, double *d, double s, double e)
 	D = *d; 	
 
 	// Shrink from the right side
-	while(intervalIsValid(currentMax, C, D, s, e))
+	while(intervalIsValid(currentMax, C, D))
 	{
 		C = (D - C)/2 + C; 
 	}
