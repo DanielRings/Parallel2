@@ -40,7 +40,7 @@ void gInitBuffer();
 bool gWorkBuffer(int function, double *c, double *d, double c2, double d2);
 
 // Returns true only if max changed
-bool gSetMax(double fc, double fd);
+bool gSetMax(double fc, double fd, double e);
 
 // Function we want to find the maximum of
 double f(double x);
@@ -50,14 +50,8 @@ bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *s
 
 bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int *status);
 
-// Returns true only if max changed
-bool lSetMax(double *currentMax, double fc, double fd);
-
-// Gives front value but does not pop it off the queue
-bool peek(double *c, double *d, double *buffer, int *head, int *tail, int *status);
-
 // Returns true only if it is possible to get a higher value in this interval
-bool intervalIsValid(double currentMax, double c, double d);
+bool intervalIsValid(double currentMax, double c, double d, double s, double e);
 
 // Attempts to rid itself of a piece of the interval handed to it
 bool narrowInterval(double currentMax, double *c, double *d);

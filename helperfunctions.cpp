@@ -90,17 +90,17 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 }
 
 // Returns true only if max changed
-bool gSetMax(double fc, double fd)
+bool gSetMax(double fc, double fd, double e)
 {
 	bool ret = false; 
 	#pragma omp critical
 	{
-		if(gMax + EPSILON < fc)
+		if(gMax + e < fc)
 		{
 			gMax = fc;
 			ret = true;
 		}
-		if(gMax + EPSILON < fd)
+		if(gMax + e < fd)
 		{
 			gMax = fd;
 			ret = true;
@@ -184,66 +184,16 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 	}
 }
 
-// Returns true only if max changed
-bool lSetMax(double *currentMax, double fc, double fd)
-{
-	if(*currentMax + EPSILON < fc)
-		*currentMax = fc;
-	else if(*currentMax + EPSILON < fd)
-		*currentMax = fd; 
-	else 
-		return false; 
-
-	return true; 
-}
-
-
-// Gives front value but does not pop it off the queue
-bool peek(double *c, double *d, double *buffer, int *head, int *tail, int *status)
-{
-	if(*status == 0)
-	{
-		return false;
-	}
-	else
-	{
-		// Add to circular buffer
-		*c = buffer[*head];
-		*d = buffer[*head+1]; 
-		return true; 
-	}
-}
-
 // Returns true only if it is possible to get a higher value in this interval
-bool intervalIsValid(double currentMax, double c, double d)
+bool intervalIsValid(double currentMax, double c, double d, double s, double e)
 {
-	if((d - c) < EPSILON)
+	if(s * (d - c) < e)
 		return false; 
-	if(((f(c) + f(d) + SLOPE*(d - c))/2) > (currentMax + EPSILON))
+	if(((f(c) + f(d) + s*(d - c))/2) > (currentMax + e))
 		return true; 
 	else
 		return false;
 }
-
-// Does same this as intervalIsValid() but also updates the max
-bool validIntervalAndMax(double *currentMax, double c, double d)
-{
-	double fC = f(c); 
-	double fD = f(d); 
-	if(lSetMax(currentMax, fC, fD))
-	{
-		return true; 
-	}
-	else
-	{
-		if(((fC + fD + SLOPE*(d - c))/2) > (*currentMax + EPSILON))
-			return true; 
-		else
-			return false;
-	}
-}
-
-
 
 // Attempts to rid itself of a piece of the interval handed to it
 bool narrowInterval(double currentMax, double *c, double *d)
