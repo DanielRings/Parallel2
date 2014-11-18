@@ -10,8 +10,17 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char **argv)
 {
+	if(int argc != 5){
+		cout << "Wrong number of arguments\n";
+		return 0;
+	}
+	const int A = strtod(argv[1]);
+	const int B = strtod(argv[2]);
+	const int E = strtod(argv[3]);
+	const int S = strtod(argv[4]);
+	cout << A << "-" << B << "-" << E << "-" << S << endl;
 	int threads = omp_get_num_procs();
 	//int threads = 2;
 	omp_set_num_threads(threads);
@@ -24,107 +33,110 @@ int main()
 	printf("\nNumber of threads: %d\n", threads);
 
 	gInitBuffer();
-	bool * global_finished = new bool[threads];
+	bool *gThreadsFinished = new bool[threads];
 	for(int i=0; i<threads; i++)
-		global_finished[i] = false;
+	{
+		gThreadsFinished[i] = false;
+	}
 	
+	double start = omp_get_wtime();
 	#pragma omp parallel
 	{
 		// Init local variables
-		double local_buffer[LOCAL_BUFF_SIZE];
-		double local_c = 0;
-		double local_d = 0;
-		int local_head = 0;
-		int local_tail = 0;
-		int local_status = 0;
+		double lBuffer[LOCAL_BUFF_SIZE];
+		double lC = 0;
+		double lD = 0;
+		int lHead = 0;
+		int lTail = 0;
+		int lStatus = 0;
 	
 		// Add init interval to queue
-		int local_threadNum = omp_get_thread_num();
-		local_qWork(local_threadNum*chunkSize+START_A, (local_threadNum+1)*chunkSize+START_A, local_buffer, &local_head, &local_tail, &local_status);
+		int threadID = omp_get_thread_num();
+		lWorkQueue(threadID*chunkSize+START_A, (threadID+1)*chunkSize+START_A, lBuffer, &lHead, &lTail, &lStatus);
 
 		// Print each thread's interval
-		//printf("Thread %d: [%f, %f]\n", local_threadNum, local_threadNum*chunkSize+START_A, (local_threadNum+1)*chunkSize+START_A);
+		//printf("Thread %d: [%f, %f]\n", threadID, threadID*chunkSize+START_A, (threadID+1)*chunkSize+START_A);
 		
 		int debugCount = 0;
 
 		bool lContinue = true;
-		while(lContinue)	
+		while(lContinue)
 		{
 			
 			// FOR DEBUGGING
 			debugCount++; 
 			if(debugCount == DEBUG_FREQ)
 			{
-				//printBuff(local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, 10); 
+				//printBuff(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, 10); 
 				printf("GlobalSpaceLeft: %d\t", spaceLeft(GLOBAL_BUFF_SIZE, gHead, gTail, gStatus));
-				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", local_threadNum, local_status, spaceLeft(LOCAL_BUFF_SIZE, local_head, local_tail, local_status), gMax, intervalLeft(END_B-START_A, local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status), averageSubintervalSize(local_buffer, LOCAL_BUFF_SIZE, local_head, local_tail, local_status));
+				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", threadID, lStatus, spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus), gMax, intervalLeft(END_B-START_A, lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus), averageSubintervalSize(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus));
 				debugCount = 0; 
 			}
 			
 			bool cont = false;	
 			// Get work from a queue
-			if(local_status != 0)
+			if(lStatus != 0)
 			{
 				// Local buffer still has work so we get some from there
-				local_deqWork(&local_c, &local_d, local_buffer, &local_head, &local_tail, &local_status);
-				global_finished[local_threadNum] = false; 
+				lWorkDeque(&lC, &lD, lBuffer, &lHead, &lTail, &lStatus);
+				gThreadsFinished[threadID] = false; 
 				cont = true; 
 			}
 			
 			else
 			{
-				global_finished[local_threadNum] = true; 
-				while(!allThreadsFinished(global_finished, threads) && !cont)
+				gThreadsFinished[threadID] = true; 
+				while(!allThreadsFinished(gThreadsFinished, threads) && !cont)
 				{
 					if(gStatus != 0)
 					{
-						cont = gWorkBuffer(FUN_DEQUEUE, &local_c, &local_d, 0, 0);
+						cont = gWorkBuffer(FUN_DEQUEUE, &lC, &lD, 0, 0);
 					}
 				}
 				if(cont)
 				{
-					global_finished[local_threadNum] = false; 
+					gThreadsFinished[threadID] = false; 
 				}
 			}
 		
 			if(cont)
 			{	
 				// Check if possible larger
-				if(intervalIsValid(gMax, local_c, local_d))
+				if(intervalIsValid(gMax, lC, lD))
 				{
-					gSetMax(f(local_c), f(local_d)); 
+					gSetMax(f(lC), f(lD)); 
 					
 					// IF FULL, SEND WORK TO GLOBAL BUFF AT A RATE DETERMINED BY A CONSTANT
 
 					// Two intervals will not fit in local buffer
-					if(spaceLeft(LOCAL_BUFF_SIZE, local_head, local_tail, local_status) == 2)
+					if(spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus) == 2)
 					{
 						// Global buffer is full too - so we shrink the current interval instead of splitting it
 						if(gStatus == 2)
 						{
 							// NEED TO FIX THIS FUNCTION BELOW
-							narrowInterval(gMax, &local_c, &local_d);
+							narrowInterval(gMax, &lC, &lD);
 							// Queue up shrunken interval back into local buffer
-							local_qWork(local_c, local_d, local_buffer, &local_head, &local_tail, &local_status); 
+							lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 						}
 						else 
 						{
-							double pC = local_c;
-							double pD = ((local_d-local_c)/2)+local_c;
-							double pC2 = ((local_d-local_c)/2)+local_c;
-							double pD2 = local_d; 
+							double pC = lC;
+							double pD = ((lD-lC)/2)+lC;
+							double pC2 = ((lD-lC)/2)+lC;
+							double pD2 = lD; 
 							if(!gWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
 							{
-								narrowInterval(gMax, &local_c, &local_d);
-								local_qWork(local_c, local_d, local_buffer, &local_head, &local_tail, &local_status); 
+								narrowInterval(gMax, &lC, &lD);
+								lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 							}
 								
 						}
 					}
 					else
 					{
-						local_qWork(local_c, ((local_d-local_c)/2)+local_c, local_buffer, &local_head, &local_tail, &local_status);
-						local_qWork(((local_d-local_c)/2)+local_c, local_d, local_buffer, &local_head, &local_tail, &local_status);	
+						lWorkQueue(lC, ((lD-lC)/2)+lC, lBuffer, &lHead, &lTail, &lStatus);
+						lWorkQueue(((lD-lC)/2)+lC, lD, lBuffer, &lHead, &lTail, &lStatus);	
 					}
 				}
 			}
@@ -133,11 +145,11 @@ int main()
 				lContinue = false; 
 			}
 		}
-		
-		global_finished[local_threadNum] = true; 	
-	} // END PARALLEL 
+		gThreadsFinished[threadID] = true; 	
+	} // END PARALLEL
+	double end = omp_get_wtime();
 
-	//delete[] global_finished;
-	printf("GlobalMax = %2.30f\n", gMax); 
+	//delete[] gThreadsFinished;
+	printf("Max = %2.30f\nTime=%f", gMax, end-start); 
 	return 0;
 }

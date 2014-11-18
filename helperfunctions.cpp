@@ -3,7 +3,7 @@
 
 // Global Stuff
 double gMax; 
-double * gBuffer;
+double *gBuffer;
 int gHead; 
 int gTail; 
 int gStatus; 
@@ -18,84 +18,8 @@ void gInitBuffer()
 
 }
 
-// Function we want to find the maximum of
-double f(double x)
-{
-	double outerSum = 0; 
-	for(unsigned int i = 100; i >= 1; --i)
-	{
-		double innerSum = 0; 
-		for(unsigned int j = i; j >= 1; --j)
-		{
-			innerSum += pow((x + j), -3.1);
-		}
-		
-		outerSum += sin(x + innerSum)/pow(1.2, i);
-	}
-
-	return outerSum; 
-}
-
-// Local Circular Queue 
-bool local_qWork(double c, double d, double * buffer, int * head, int * tail, int * status)
-{
-	if((*tail < 0) || ((*tail + 1) > (LOCAL_BUFF_SIZE -1)))
-	{
-		while(1)
-		{ 
-			printf(" OUTOUTOUTOUT");
-		}
-	}
-	if(*status == 2)
-	{
-		return false;
-	}
-	else
-	{
-		// Add to circular buffer
-		buffer[*tail] = c;
-		buffer[*tail+1] = d; 
-		*tail = (*tail+2)%LOCAL_BUFF_SIZE;  
-		if(*tail == *head)
-			*status = 2;
-		else
-			*status = 1; 
-
-		return true; 
-	}
-}
-
-bool local_deqWork(double * c, double * d, double * buffer, int * head, int * tail, int * status)
-{
-	if((*head < 0) || ((*head + 1) > (LOCAL_BUFF_SIZE -1)))
-	{
-		while(1)
-		{ 
-			printf(" OUTOUTOUTOUT");
-		}
-	}
-	if(*status == 0)
-	{
-		return false;
-	}
-	else
-	{
-		// Get from circular buffer
-		*c = buffer[*head];
-		*d = buffer[*head+1]; 
-		*head = (*head+2)%LOCAL_BUFF_SIZE;  
-		if(*tail == *head)
-			*status = 0;
-		else
-			*status = 1; 
-
-		return true; 
-	}
-}
-
-
 // Global Circular Queue 
-bool gWorkBuffer(int function, double * c, double * d, double c2, double d2)
+bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 {
 	bool ret = true; 
 	#pragma omp critical
@@ -165,8 +89,117 @@ bool gWorkBuffer(int function, double * c, double * d, double c2, double d2)
 	return ret; 
 }
 
+// Returns true only if max changed
+bool gSetMax(double fc, double fd)
+{
+	bool ret = false; 
+	#pragma omp critical
+	{
+		if(gMax + EPSILON < fc)
+		{
+			gMax = fc;
+			ret = true;
+		}
+		if(gMax + EPSILON < fd)
+		{
+			gMax = fd;
+			ret = true;
+		}
+	}
+	return ret; 
+}
+
+// Function we want to find the maximum of
+double f(double x)
+{
+	double outerSum = 0; 
+	for(unsigned int i = 100; i >= 1; --i)
+	{
+		double innerSum = 0; 
+		for(unsigned int j = i; j >= 1; --j)
+		{
+			innerSum += pow((x + j), -3.1);
+		}
+		
+		outerSum += sin(x + innerSum)/pow(1.2, i);
+	}
+
+	return outerSum; 
+}
+
+// Local Circular Queue 
+bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *status)
+{
+	if((*tail < 0) || ((*tail + 1) > (LOCAL_BUFF_SIZE -1)))
+	{
+		while(1)
+		{ 
+			printf(" OUTOUTOUTOUT");
+		}
+	}
+	if(*status == 2)
+	{
+		return false;
+	}
+	else
+	{
+		// Add to circular buffer
+		buffer[*tail] = c;
+		buffer[*tail+1] = d; 
+		*tail = (*tail+2)%LOCAL_BUFF_SIZE;  
+		if(*tail == *head)
+			*status = 2;
+		else
+			*status = 1; 
+
+		return true; 
+	}
+}
+
+bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int *status)
+{
+	if((*head < 0) || ((*head + 1) > (LOCAL_BUFF_SIZE -1)))
+	{
+		while(1)
+		{ 
+			printf(" OUTOUTOUTOUT");
+		}
+	}
+	if(*status == 0)
+	{
+		return false;
+	}
+	else
+	{
+		// Get from circular buffer
+		*c = buffer[*head];
+		*d = buffer[*head+1]; 
+		*head = (*head+2)%LOCAL_BUFF_SIZE;  
+		if(*tail == *head)
+			*status = 0;
+		else
+			*status = 1; 
+
+		return true; 
+	}
+}
+
+// Returns true only if max changed
+bool lSetMax(double *currentMax, double fc, double fd)
+{
+	if(*currentMax + EPSILON < fc)
+		*currentMax = fc;
+	else if(*currentMax + EPSILON < fd)
+		*currentMax = fd; 
+	else 
+		return false; 
+
+	return true; 
+}
+
+
 // Gives front value but does not pop it off the queue
-bool local_peek(double * c, double * d, double * buffer, int * head, int * tail, int * status)
+bool peek(double *c, double *d, double *buffer, int *head, int *tail, int *status)
 {
 	if(*status == 0)
 	{
@@ -181,41 +214,6 @@ bool local_peek(double * c, double * d, double * buffer, int * head, int * tail,
 	}
 }
 
-// Returns true only if max changed
-bool local_setMax(double * currentMax, double fc, double fd)
-{
-	if(*currentMax + EPSILON < fc)
-		*currentMax = fc;
-	else if(*currentMax + EPSILON < fd)
-		*currentMax = fd; 
-	else 
-		return false; 
-
-	return true; 
-}
-
-// Returns true only if max changed
-bool gSetMax(double fc, double fd)
-{
-	bool ret = true; 
-	#pragma omp critical
-	{
-		if(gMax + EPSILON < fc)
-		{
-			gMax = fc; 
-		}
-		else if(gMax + EPSILON < fd)
-		{
-			gMax = fd; 
-		}
-		else
-		{ 
-			ret = false; 
-		}
-	}
-	return ret; 
-}
-
 // Returns true only if it is possible to get a higher value in this interval
 bool intervalIsValid(double currentMax, double c, double d)
 {
@@ -228,11 +226,11 @@ bool intervalIsValid(double currentMax, double c, double d)
 }
 
 // Does same this as intervalIsValid() but also updates the max
-bool validIntervalAndMax(double * currentMax, double c, double d)
+bool validIntervalAndMax(double *currentMax, double c, double d)
 {
 	double fC = f(c); 
 	double fD = f(d); 
-	if(local_setMax(currentMax, fC, fD))
+	if(lSetMax(currentMax, fC, fD))
 	{
 		return true; 
 	}
@@ -248,7 +246,7 @@ bool validIntervalAndMax(double * currentMax, double c, double d)
 
 
 // Attempts to rid itself of a piece of the interval handed to it
-bool narrowInterval(double currentMax, double * c, double * d)
+bool narrowInterval(double currentMax, double *c, double *d)
 {
 	// Save the original values
 	double C = *c; 
@@ -310,11 +308,11 @@ int spaceLeft(int bufferSize, int head, int tail, int status)
 }*/
 
 // Returns true if all processors are done
-bool allThreadsFinished(bool * doneArr, int size)
+bool allThreadsFinished(bool *threadsFinished, int size)
 {
 	for(int i=0; i<size; i++)
 	{
-		if(!doneArr[i])
+		if(!threadsFinished[i])
 			return false;
 	}
 	
@@ -324,7 +322,7 @@ bool allThreadsFinished(bool * doneArr, int size)
 // Returns the amount of the remaining interval represented in the buffer 
 // as a percentage
 // FOR DEBUGGING
-double intervalLeft(double originalSize, double * buffer, int bufferSize, int head, int tail, int status)
+double intervalLeft(double originalSize, double *buffer, int bufferSize, int head, int tail, int status)
 {
 	if(status == 0)
 		return 0; 
@@ -343,7 +341,7 @@ double intervalLeft(double originalSize, double * buffer, int bufferSize, int he
 
 // Returns the average size of the subintervals in the buffer
 // FOR DEBUGGING ONLY
-double averageSubintervalSize(double * buffer, int bufferSize, int head, int tail, int status)
+double averageSubintervalSize(double *buffer, int bufferSize, int head, int tail, int status)
 {
 	if(status == 0)
 		return 0; 
@@ -363,7 +361,7 @@ double averageSubintervalSize(double * buffer, int bufferSize, int head, int tai
 
 // Prints the intervals in the buffer
 // FOR DEBUGGING ONLY
-void printBuff(double * buffer, int bufferSize, int head, int tail, int count)
+void printBuff(double *buffer, int bufferSize, int head, int tail, int count)
 {
 	int iterCount = 0;  
 	do
