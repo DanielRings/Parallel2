@@ -20,7 +20,10 @@ int main(int argc, char** argv)
 	const double B = strtod(argv[2], NULL);
 	const double E = strtod(argv[3], NULL);
 	const double S = strtod(argv[4], NULL);
-	cout << A << "-" << B << "-" << E << "-" << S << "\n";
+	if(A >= B || E <= 0 || S <= 0){
+		cout << "Bad arguments\n";
+		return 0;
+	}
 	int threads = omp_get_num_procs();
 	omp_set_num_threads(threads);
 
@@ -135,6 +138,6 @@ int main(int argc, char** argv)
 		gThreadsFinished[threadID] = true; 	
 	}
 	double end = omp_get_wtime();
-	cout << "Max = " << gMax << "\nTime=" << end-start << "\n";
+	cout << "Max: " << gMax << "\nTime: " << end-start << "\n";
 	return 0;
 }
