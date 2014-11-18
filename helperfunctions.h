@@ -7,10 +7,6 @@
 #include <math.h>
 #include <omp.h>
 
-#define A 1
-#define B 100
-#define E 0.000001
-#define S 12
 #define GLOBAL_BUFF_SIZE 10000
 #define LOCAL_BUFF_SIZE 100
 #define DEBUG_FREQ 100
@@ -20,6 +16,11 @@
 #define FUN_SINGLE_Q 1
 #define FUN_DOUBLE_Q 2
 
+// Start, End, Epsilon, and Slope
+#define A 1
+#define B 100
+#define E 0.000001
+#define S 12
 
 // Global Stuff
 extern double gMax; 
