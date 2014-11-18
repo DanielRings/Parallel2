@@ -12,15 +12,13 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-	if(argc != 5){
+	if(argc != 3){
 		cout << "Wrong number of arguments\n";
 		return 0;
 	}
 	A = strtod(argv[1], NULL);
 	B = strtod(argv[2], NULL);
-	E = strtod(argv[3], NULL);
-	S = strtod(argv[4], NULL);
-	if(A >= B || E <= 0 || S <= 0){
+	if(A >= B){
 		cout << "Bad arguments\n";
 		return 0;
 	}

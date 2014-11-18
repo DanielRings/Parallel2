@@ -4,13 +4,11 @@
 // Global Stuff
 double A;
 double B;
-double S;
-double E;
 double gMax; 
 double *gBuffer;
 int gHead; 
 int gTail; 
-int gStatus; 
+int gStatus;
 
 void gInitBuffer()
 {
@@ -99,12 +97,12 @@ bool gSetMax(double fc, double fd)
 	bool ret = false; 
 	#pragma omp critical
 	{
-		if(gMax + EPSILON < fc)
+		if(gMax + E < fc)
 		{
 			gMax = fc;
 			ret = true;
 		}
-		if(gMax + EPSILON < fd)
+		if(gMax + E < fd)
 		{
 			gMax = fd;
 			ret = true;
@@ -191,9 +189,9 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 // Returns true only if it is possible to get a higher value in this interval
 bool intervalIsValid(double currentMax, double c, double d)
 {
-	if(SLOPE * (d - c) < EPSILON)
+	if(S * (d - c) < E)
 		return false; 
-	if(((f(c) + f(d) + SLOPE*(d - c))/2) > (currentMax + EPSILON))
+	if(((f(c) + f(d) + S*(d - c))/2) > (currentMax + E))
 		return true; 
 	else
 		return false;

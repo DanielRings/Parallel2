@@ -7,18 +7,11 @@
 #include <math.h>
 #include <omp.h>
 
-#define START_A 1
-#define END_B 100
-#define EPSILON 0.000001 // 10^-6
-#define SLOPE 12
+#define E 0.000001
+#define S 12
 #define GLOBAL_BUFF_SIZE 1000
 #define LOCAL_BUFF_SIZE 1000
 #define DEBUG_FREQ 100
-
-// For status of buffers
-#define STATUS_EMPTY 0
-#define STATUS_MID 1
-#define STATUS_FULL 2
 
 // For global buffer 
 #define FUN_DEQUEUE 0
@@ -29,8 +22,6 @@
 // Global Stuff
 extern double A;
 extern double B;
-extern double S;
-extern double E;
 extern double gMax; 
 extern double *gBuffer;
 extern int gHead; 
