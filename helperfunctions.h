@@ -9,12 +9,6 @@
 
 #define GBUFFERSIZE 128000
 #define LBUFFERSIZE 8
-#define DEBUG_FREQ 5000
-
-// For global buffer 
-#define FUN_DEQUEUE 0
-#define FUN_SINGLE_Q 1
-#define FUN_DOUBLE_Q 2
 
 // Start, End, Epsilon, and Slope
 #define A 1
@@ -48,21 +42,5 @@ bool narrowInterval(double currentMax, double *c, double *d);
 int spaceLeft(int bufferSize, int head, int tail, int status);
  
 bool allThreadsFinished(bool *threadsFinished, int size);
-
-// Returns the amount of the remaining interval represented in the buffer 
-// as a percentage
-// FOR DEBUGGING
-double intervalLeft(double originalSize, double *buffer, int bufferSize, int head, int tail, int status);
-
-// Returns the average size of the subintervals in the buffer
-// FOR DEBUGGING ONLY
-double averageSubintervalSize(double *buffer, int bufferSize, int head, int tail, int status);
-
-// Prints the intervals in the buffer
-// FOR DEBUGGING ONLY
-void printBuff(double *buffer, int bufferSize, int head, int tail, int count);
-
-// FOR DEBUGGING
-void spinWait();
 
 #endif

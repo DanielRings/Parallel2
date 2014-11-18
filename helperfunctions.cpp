@@ -16,17 +16,16 @@ void gInitBuffer()
 
 }
 
-///////////////////////
 bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 {
-	bool ret = true; 
+	bool r = true; 
 	#pragma omp critical
 	{
-		// Dequeue function
-		if(function == FUN_DEQUEUE)
+		//Pop
+		if(function == 0)
 		{
 			if(gStatus == 0)
-				ret = false;
+				r = false;
 			else
 			{
 				// Get from circular buffer
@@ -41,21 +40,20 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 			}
 
 		}
-		// Insert into buffer
+		// Push (1 or 2)
 		else
 		{
 			if(gStatus == 2)
 			{
-				ret = false;
+				r = false;
 			}
 			else
 			{
-				// Check if inserting two intervals
-				if(function == FUN_DOUBLE_Q)
+				// Push 2
+				if(function == 1)
 				{
 					if(spaceLeft(GBUFFERSIZE, gHead, gTail, gStatus) >= 4)
 					{
-						// Insert both intervals
 						gBuffer[gTail] = *c;
 						gBuffer[gTail+1] = *d; 
 						gBuffer[gTail+2] = c2;
@@ -64,18 +62,17 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 					}
 					else
 					{
-						// Cannot insert both succesfully so NONE will be inserted
-						ret = false; 
+						// Push 2 Fails
+						r = false;
 					}
 				}
 				else
 				{
-					// Already checked to make sure it is not full so insert
+					// Push 1
 					gBuffer[gTail] = *c;
 					gBuffer[gTail+1] = *d; 
 					gTail = (gTail+2)%GBUFFERSIZE;  
 				}
-				// Add to circular buffer
 				if(gTail == gHead)
 					gStatus = 2;
 				else
@@ -84,26 +81,26 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 		}
 	}
 	
-	return ret; 
+	return r; 
 }
 
 bool gSetMax(double fc, double fd)
 {
-	bool ret = false; 
+	bool r = false; 
 	#pragma omp critical
 	{
 		if(gMax + E < fc)
 		{
 			gMax = fc + E;
-			ret = true;
+			r = true;
 		}
 		if(gMax + E < fd)
 		{
 			gMax = fd + E;
-			ret = true;
+			r = true;
 		}
 	}
-	return ret; 
+	return r; 
 }
 
 //the function
@@ -124,7 +121,6 @@ double f(double x)
 	return outerSum; 
 }
 
-// Local Circular Queue 
 bool lWorkPush(double c, double d, double *buffer, int *head, int *tail, int *status)
 {
 
@@ -134,7 +130,6 @@ bool lWorkPush(double c, double d, double *buffer, int *head, int *tail, int *st
 	}
 	else
 	{
-		// Add to circular buffer
 		buffer[*tail] = c;
 		buffer[*tail+1] = d; 
 		*tail = (*tail+2)%LBUFFERSIZE;  
@@ -147,7 +142,6 @@ bool lWorkPush(double c, double d, double *buffer, int *head, int *tail, int *st
 	}
 }
 
-//////////////////////////////
 bool lWorkPop(double *c, double *d, double *buffer, int *head, int *tail, int *status)
 {
 	if(*status == 0)
@@ -226,63 +220,4 @@ bool allThreadsFinished(bool *threadsFinished, int size)
 	}
 	
 	return true; 
-}
-
-// FOR DEBUGGING
-double intervalLeft(double originalSize, double *buffer, int bufferSize, int head, int tail, int status)
-{
-	if(status == 0)
-		return 0; 
-	else 
-	{
-		double runSum = 0; 
-		do
-		{
-			runSum += (buffer[head+1] - buffer[head]);
-			head = (head+2)%bufferSize;
-		}while(head != tail);
-		
-		return 100*runSum/originalSize; 
-	}
-}
-
-// Returns the average size of the subintervals in the buffer
-// FOR DEBUGGING ONLY
-double averageSubintervalSize(double *buffer, int bufferSize, int head, int tail, int status)
-{
-	if(status == 0)
-		return 0; 
-	else
-	{
-		double runSum = 0;
-		int itemCount = 0;  
-		do
-		{
-			runSum += (buffer[head+1] - buffer[head]);
-			head = (head+2)%bufferSize;
-			itemCount++; 
-		}while(head != tail);
-		return runSum/(itemCount); 
-	}
-}
-
-// Prints the intervals in the buffer
-// FOR DEBUGGING ONLY
-void printBuff(double *buffer, int bufferSize, int head, int tail, int count)
-{
-	int iterCount = 0;  
-	do
-	{
-		printf("[%f, %f]\t", buffer[head], buffer[head+1]);
-		head = (head+2)%bufferSize;
-		iterCount++; 
-	}while(head != tail && iterCount < count);
-	
-	printf("\n");  
-}
-
-// FOR DEBUGGING
-void spinWait()
-{
-	while(1);
 }

@@ -28,23 +28,9 @@ int main(int argc, char** argv)
 		int threadID = omp_get_thread_num();
 		lWorkPush(threadID*initialSplit+A, (threadID+1)*initialSplit+A, lBuffer, &lHead, &lTail, &lStatus);
 
-		//remove
-		int debugCount = 0;
-
 		bool lContinue = true;
 		while(lContinue)
 		{
-			
-			// FOR DEBUGGING
-			debugCount++; 
-			if(debugCount == DEBUG_FREQ)
-			{
-				//printBuff(lBuffer, LBUFFERSIZE, lHead, lTail, 10); 
-				printf("GlobalSpaceLeft: %d\t", spaceLeft(GBUFFERSIZE, gHead, gTail, gStatus));
-				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", threadID, lStatus, spaceLeft(LBUFFERSIZE, lHead, lTail, lStatus), gMax, intervalLeft(B-A, lBuffer, LBUFFERSIZE, lHead, lTail, lStatus), averageSubintervalSize(lBuffer, LBUFFERSIZE, lHead, lTail, lStatus));
-				debugCount = 0; 
-			}
-			
 			bool cont = false;	
 			
 			// If local buffer isn't empty, work on local buffer
@@ -62,7 +48,7 @@ int main(int argc, char** argv)
 				{
 					if(gStatus != 0)
 					{
-						cont = gWorkBuffer(FUN_DEQUEUE, &lC, &lD, 0, 0);
+						cont = gWorkBuffer(0, &lC, &lD, 0, 0);
 					}
 				}
 				if(cont)
@@ -91,8 +77,8 @@ int main(int argc, char** argv)
 							double pC = lC;
 							double pD = ((lD-lC)/2)+lC;
 							double pC2 = ((lD-lC)/2)+lC;
-							double pD2 = lD; 
-							if(!gWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
+							double pD2 = lD;
+							if(!gWorkBuffer(1, &pC, &pD, pC2, pD2))
 							{
 								narrowInterval(gMax, &lC, &lD);
 								lWorkPush(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
@@ -115,6 +101,7 @@ int main(int argc, char** argv)
 		gThreadsFinished[threadID] = true; 	
 	}
 	double end = omp_get_wtime();
-	cout << "Max: " << gMax << "\nTime: " << end-start << "\n";
+	printf("Max: %4.28f\n",gMax);
+	cout << "Time: " << end-start << "\n";
 	return 0;
 }
