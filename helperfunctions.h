@@ -27,10 +27,10 @@
 
 
 // Global Stuff
-extern const double A;
-extern const double B;
-extern const double S;
-extern const double E;
+extern double A;
+extern double B;
+extern double S;
+extern double E;
 extern double gMax; 
 extern double *gBuffer;
 extern int gHead; 

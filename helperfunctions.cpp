@@ -2,10 +2,10 @@
 
 
 // Global Stuff
-double const A;
-double const B;
-double const S;
-double const E;
+double A;
+double B;
+double S;
+double E;
 double gMax; 
 double *gBuffer;
 int gHead; 
