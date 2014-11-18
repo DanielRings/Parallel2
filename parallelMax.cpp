@@ -10,16 +10,16 @@
 
 using namespace std;
 
-int main(int argc, char** argv)
+int main()
 {
 	if(int argc != 5){
 		cout << "Wrong number of arguments\n";
 		return 0;
 	}
-	const int A = strtod(argv[1], NULL);
-	const int B = strtod(argv[2], NULL);
-	const int E = strtod(argv[3], NULL);
-	const int S = strtod(argv[4], NULL);
+	// const int A = strtod(argv[1], NULL);
+	// const int B = strtod(argv[2], NULL);
+	// const int E = strtod(argv[3], NULL);
+	// const int S = strtod(argv[4], NULL);
 	cout << A << "-" << B << "-" << E << "-" << S << endl;
 	int threads = omp_get_num_procs();
 	//int threads = 2;
