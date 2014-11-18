@@ -11,7 +11,7 @@
 #define S 12
 #define GLOBAL_BUFF_SIZE 1000
 #define LOCAL_BUFF_SIZE 1000
-#define DEBUG_FREQ 100
+#define DEBUG_FREQ 1000
 
 // For global buffer 
 #define FUN_DEQUEUE 0
