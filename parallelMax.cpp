@@ -41,6 +41,7 @@ int main(int argc, char** argv)
 	double start = omp_get_wtime();
 	#pragma omp parallel
 	{
+		cout << "hit1";
 		double lBuffer[LOCAL_BUFF_SIZE];
 		double lC = 0;
 		double lD = 0;
