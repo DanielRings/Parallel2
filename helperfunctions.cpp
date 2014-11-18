@@ -125,15 +125,9 @@ double f(double x)
 }
 
 // Local Circular Queue 
-bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *status)
+bool lWorkPush(double c, double d, double *buffer, int *head, int *tail, int *status)
 {
-	if((*tail < 0) || ((*tail + 1) > (LBUFFERSIZE -1)))
-	{
-		while(1)
-		{ 
-			printf(" OUTOUTOUTOUT");
-		}
-	}
+
 	if(*status == 2)
 	{
 		return false;
@@ -154,15 +148,8 @@ bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *s
 }
 
 //////////////////////////////
-bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int *status)
+bool lWorkPop(double *c, double *d, double *buffer, int *head, int *tail, int *status)
 {
-	if((*head < 0) || ((*head + 1) > (LBUFFERSIZE -1)))
-	{
-		while(1)
-		{ 
-			printf(" OUTOUTOUTOUT");
-		}
-	}
 	if(*status == 0)
 	{
 		return false;

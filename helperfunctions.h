@@ -37,10 +37,9 @@ bool gSetMax(double fc, double fd);
 // the function
 double f(double x);
 
-// Local Circular Queue
-bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *status);
+bool lWorkPush(double c, double d, double *buffer, int *head, int *tail, int *status);
 
-bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int *status);
+bool lWorkPop(double *c, double *d, double *buffer, int *head, int *tail, int *status);
 
 bool intervalIsValid(double currentMax, double c, double d);
 

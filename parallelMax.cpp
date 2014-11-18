@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 		int lTail = 0;
 		int lStatus = 0;
 		int threadID = omp_get_thread_num();
-		lWorkQueue(threadID*initialSplit+A, (threadID+1)*initialSplit+A, lBuffer, &lHead, &lTail, &lStatus);
+		lWorkPush(threadID*initialSplit+A, (threadID+1)*initialSplit+A, lBuffer, &lHead, &lTail, &lStatus);
 
 		//remove
 		int debugCount = 0;
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 			// If local buffer isn't empty, work on local buffer
 			if(lStatus != 0)
 			{
-				lWorkDeque(&lC, &lD, lBuffer, &lHead, &lTail, &lStatus);
+				lWorkPop(&lC, &lD, lBuffer, &lHead, &lTail, &lStatus);
 				gThreadsFinished[threadID] = false; 
 				cont = true; 
 			}
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 						if(gStatus == 2)
 						{
 							narrowInterval(gMax, &lC, &lD);
-							lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
+							lWorkPush(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 						}
 						else 
 						{
@@ -95,15 +95,15 @@ int main(int argc, char** argv)
 							if(!gWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
 							{
 								narrowInterval(gMax, &lC, &lD);
-								lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
+								lWorkPush(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 							}
 								
 						}
 					}
 					else
 					{
-						lWorkQueue(lC, ((lD-lC)/2)+lC, lBuffer, &lHead, &lTail, &lStatus);
-						lWorkQueue(((lD-lC)/2)+lC, lD, lBuffer, &lHead, &lTail, &lStatus);	
+						lWorkPush(lC, ((lD-lC)/2)+lC, lBuffer, &lHead, &lTail, &lStatus);
+						lWorkPush(((lD-lC)/2)+lC, lD, lBuffer, &lHead, &lTail, &lStatus);	
 					}
 				}
 			}
