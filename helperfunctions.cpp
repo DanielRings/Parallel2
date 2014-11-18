@@ -191,9 +191,9 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 // Returns true only if it is possible to get a higher value in this interval
 bool intervalIsValid(double currentMax, double c, double d)
 {
-	if(S * (d - c) < E)
+	if(SLOPE * (d - c) < EPSILON)
 		return false; 
-	if(((f(c) + f(d) + S*(d - c))/2) > (currentMax + E))
+	if(((f(c) + f(d) + SLOPE*(d - c))/2) > (currentMax + EPSILON))
 		return true; 
 	else
 		return false;
