@@ -95,12 +95,12 @@ bool gSetMax(double fc, double fd, double e)
 	bool ret = false; 
 	#pragma omp critical
 	{
-		if(gMax + e < fc)
+		if(gMax + EPSILON < fc)
 		{
 			gMax = fc;
 			ret = true;
 		}
-		if(gMax + e < fd)
+		if(gMax + EPSILON < fd)
 		{
 			gMax = fd;
 			ret = true;
@@ -187,9 +187,9 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 // Returns true only if it is possible to get a higher value in this interval
 bool intervalIsValid(double currentMax, double c, double d, double s, double e)
 {
-	if(s * (d - c) < e)
+	if(SLOPE * (d - c) < EPSILON)
 		return false; 
-	if(((f(c) + f(d) + s*(d - c))/2) > (currentMax + e))
+	if(((f(c) + f(d) + SLOPE*(d - c))/2) > (currentMax + EPSILON))
 		return true; 
 	else
 		return false;
