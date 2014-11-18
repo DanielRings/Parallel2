@@ -11,8 +11,8 @@
 #define B 100
 #define E 0.000001
 #define S 12
-#define GLOBAL_BUFF_SIZE 1000
-#define LOCAL_BUFF_SIZE 1000
+#define GLOBAL_BUFF_SIZE 10000
+#define LOCAL_BUFF_SIZE 100
 #define DEBUG_FREQ 100
 
 // For global buffer 
