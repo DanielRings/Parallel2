@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	int threads = omp_get_num_procs();
 	omp_set_num_threads(threads);
 
-	double initialSplit = (B - A)/threads;
+	double initialSplit = (END_B - START_A)/threads;
 
 	cout << "threads: " << threads << "\n";
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 		int lTail = 0;
 		int lStatus = 0;
 		int threadID = omp_get_thread_num();
-		lWorkQueue(threadID*initialSplit+A, (threadID+1)*initialSplit+A, lBuffer, &lHead, &lTail, &lStatus);
+		lWorkQueue(threadID*initialSplit+START_A, (threadID+1)*initialSplit+START_A, lBuffer, &lHead, &lTail, &lStatus);
 
 		//remove
 		int debugCount = 0;
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 			{
 				//printBuff(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, 10); 
 				printf("GlobalSpaceLeft: %d\t", spaceLeft(GLOBAL_BUFF_SIZE, gHead, gTail, gStatus));
-				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", threadID, lStatus, spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus), gMax, intervalLeft(B-A, lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus), averageSubintervalSize(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus));
+				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", threadID, lStatus, spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus), gMax, intervalLeft(END_B-START_A, lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus), averageSubintervalSize(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus));
 				debugCount = 0; 
 			}
 			
