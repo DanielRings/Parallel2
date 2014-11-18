@@ -13,7 +13,7 @@
 #define SLOPE 12
 #define GLOBAL_BUFF_SIZE 1000
 #define LOCAL_BUFF_SIZE 1000
-#define DEBUG_FREQ 5000
+#define DEBUG_FREQ 100
 
 // For status of buffers
 #define STATUS_EMPTY 0
