@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 	double start = omp_get_wtime();
 	#pragma omp parallel
 	{
-		double lBuffer[LOCAL_BUFF_SIZE];
+		double lBuffer[LBUFFERSIZE];
 		double lC = 0;
 		double lD = 0;
 		int lHead = 0;
@@ -59,9 +59,9 @@ int main(int argc, char** argv)
 			debugCount++; 
 			if(debugCount == DEBUG_FREQ)
 			{
-				//printBuff(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, 10); 
-				printf("GlobalSpaceLeft: %d\t", spaceLeft(GLOBAL_BUFF_SIZE, gHead, gTail, gStatus));
-				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", threadID, lStatus, spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus), gMax, intervalLeft(B-A, lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus), averageSubintervalSize(lBuffer, LOCAL_BUFF_SIZE, lHead, lTail, lStatus));
+				//printBuff(lBuffer, LBUFFERSIZE, lHead, lTail, 10); 
+				printf("GlobalSpaceLeft: %d\t", spaceLeft(GBUFFERSIZE, gHead, gTail, gStatus));
+				printf("tNum: %d\tStatus: %d\tSpacLeft: %d\t\tCurMax: %2.30f\tPercentLeft: %f\tAvgSubIntSize: %1.8f\n", threadID, lStatus, spaceLeft(LBUFFERSIZE, lHead, lTail, lStatus), gMax, intervalLeft(B-A, lBuffer, LBUFFERSIZE, lHead, lTail, lStatus), averageSubintervalSize(lBuffer, LBUFFERSIZE, lHead, lTail, lStatus));
 				debugCount = 0; 
 			}
 			
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 				{
 					gSetMax(f(lC), f(lD));
 					
-					if(spaceLeft(LOCAL_BUFF_SIZE, lHead, lTail, lStatus) == 2)
+					if(spaceLeft(LBUFFERSIZE, lHead, lTail, lStatus) == 2)
 					{
 						// Global buffer is full too - so we shrink the current interval instead of splitting it
 						if(gStatus == 2)

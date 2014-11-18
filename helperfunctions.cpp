@@ -1,7 +1,5 @@
 #include "helperfunctions.h"
 
-
-// Global Stuff
 double gMax; 
 double *gBuffer;
 int gHead; 
@@ -11,14 +9,14 @@ int gStatus;
 void gInitBuffer()
 {
 	gMax = 0;
-	gBuffer = new double[GLOBAL_BUFF_SIZE]; 
+	gBuffer = new double[GBUFFERSIZE]; 
 	gHead = 0; 
 	gTail = 0; 
 	gStatus = 0; 
 
 }
 
-// Global Circular Queue 
+///////////////////////
 bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 {
 	bool ret = true; 
@@ -34,7 +32,7 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 				// Get from circular buffer
 				*c = gBuffer[gHead];
 				*d = gBuffer[gHead+1]; 
-				gHead = (gHead+2)%GLOBAL_BUFF_SIZE;  
+				gHead = (gHead+2)%GBUFFERSIZE;  
 				if(gTail == gHead)
 					gStatus = 0;
 				else
@@ -55,14 +53,14 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 				// Check if inserting two intervals
 				if(function == FUN_DOUBLE_Q)
 				{
-					if(spaceLeft(GLOBAL_BUFF_SIZE, gHead, gTail, gStatus) >= 4)
+					if(spaceLeft(GBUFFERSIZE, gHead, gTail, gStatus) >= 4)
 					{
 						// Insert both intervals
 						gBuffer[gTail] = *c;
 						gBuffer[gTail+1] = *d; 
 						gBuffer[gTail+2] = c2;
 						gBuffer[gTail+3] = d2; 
-						gTail = (gTail+4)%GLOBAL_BUFF_SIZE;  
+						gTail = (gTail+4)%GBUFFERSIZE;  
 					}
 					else
 					{
@@ -75,7 +73,7 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 					// Already checked to make sure it is not full so insert
 					gBuffer[gTail] = *c;
 					gBuffer[gTail+1] = *d; 
-					gTail = (gTail+2)%GLOBAL_BUFF_SIZE;  
+					gTail = (gTail+2)%GBUFFERSIZE;  
 				}
 				// Add to circular buffer
 				if(gTail == gHead)
@@ -84,12 +82,11 @@ bool gWorkBuffer(int function, double *c, double *d, double c2, double d2)
 					gStatus = 1; 
 			}
 		}
-	} // End Critical Section
+	}
 	
 	return ret; 
 }
 
-// Returns true only if max changed
 bool gSetMax(double fc, double fd)
 {
 	bool ret = false; 
@@ -109,7 +106,7 @@ bool gSetMax(double fc, double fd)
 	return ret; 
 }
 
-// Function we want to find the maximum of
+//the function
 double f(double x)
 {
 	double outerSum = 0; 
@@ -130,7 +127,7 @@ double f(double x)
 // Local Circular Queue 
 bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *status)
 {
-	if((*tail < 0) || ((*tail + 1) > (LOCAL_BUFF_SIZE -1)))
+	if((*tail < 0) || ((*tail + 1) > (LBUFFERSIZE -1)))
 	{
 		while(1)
 		{ 
@@ -146,7 +143,7 @@ bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *s
 		// Add to circular buffer
 		buffer[*tail] = c;
 		buffer[*tail+1] = d; 
-		*tail = (*tail+2)%LOCAL_BUFF_SIZE;  
+		*tail = (*tail+2)%LBUFFERSIZE;  
 		if(*tail == *head)
 			*status = 2;
 		else
@@ -156,9 +153,10 @@ bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *s
 	}
 }
 
+//////////////////////////////
 bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int *status)
 {
-	if((*head < 0) || ((*head + 1) > (LOCAL_BUFF_SIZE -1)))
+	if((*head < 0) || ((*head + 1) > (LBUFFERSIZE -1)))
 	{
 		while(1)
 		{ 
@@ -171,10 +169,9 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 	}
 	else
 	{
-		// Get from circular buffer
 		*c = buffer[*head];
 		*d = buffer[*head+1]; 
-		*head = (*head+2)%LOCAL_BUFF_SIZE;  
+		*head = (*head+2)%LBUFFERSIZE;  
 		if(*tail == *head)
 			*status = 0;
 		else
@@ -184,7 +181,6 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 	}
 }
 
-// Returns true only if it is possible to get a higher value in this interval
 bool intervalIsValid(double currentMax, double c, double d)
 {
 	if(S * (d - c) < E)
@@ -195,7 +191,6 @@ bool intervalIsValid(double currentMax, double c, double d)
 		return false;
 }
 
-// Attempts to rid itself of a piece of the interval handed to it
 bool narrowInterval(double currentMax, double *c, double *d)
 {
 	double C = *c; 
@@ -204,7 +199,6 @@ bool narrowInterval(double currentMax, double *c, double *d)
 	// Left
 	while(intervalIsValid(currentMax, C, D))
 	{
-		//printf("stuck"); 
 		D = (D - C)/2 + C; 
 	}
 	*c = D;

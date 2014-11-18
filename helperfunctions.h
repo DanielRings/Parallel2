@@ -1,5 +1,5 @@
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef HELPERFUNCTIONS_H
+#define HELPERFUNCTIONS_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,9 +7,9 @@
 #include <math.h>
 #include <omp.h>
 
-#define GLOBAL_BUFF_SIZE 128000
-#define LOCAL_BUFF_SIZE 8
-#define DEBUG_FREQ 100
+#define GBUFFERSIZE 128000
+#define LBUFFERSIZE 8
+#define DEBUG_FREQ 5000
 
 // For global buffer 
 #define FUN_DEQUEUE 0
@@ -22,23 +22,19 @@
 #define E 0.000001
 #define S 12
 
-// Global Stuff
 extern double gMax; 
 extern double *gBuffer;
 extern int gHead; 
 extern int gTail; 
 extern int gStatus; 
 
-// Initializes the global variables needed for the buffer
 void gInitBuffer();
-
-// Global Circular Queue 
+ 
 bool gWorkBuffer(int function, double *c, double *d, double c2, double d2);
 
-// Returns true only if max changed
 bool gSetMax(double fc, double fd);
 
-// Function we want to find the maximum of
+// the function
 double f(double x);
 
 // Local Circular Queue
@@ -46,16 +42,12 @@ bool lWorkQueue(double c, double d, double *buffer, int *head, int *tail, int *s
 
 bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int *status);
 
-// Returns true only if it is possible to get a higher value in this interval
 bool intervalIsValid(double currentMax, double c, double d);
 
-// Attempts to rid itself of a piece of the interval handed to it
 bool narrowInterval(double currentMax, double *c, double *d);
 
-// Returns space left in buffer 
 int spaceLeft(int bufferSize, int head, int tail, int status);
-
-// Returns true if all processors are done 
+ 
 bool allThreadsFinished(bool *threadsFinished, int size);
 
 // Returns the amount of the remaining interval represented in the buffer 
