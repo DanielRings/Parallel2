@@ -41,7 +41,6 @@ int main(int argc, char** argv)
 	double start = omp_get_wtime();
 	#pragma omp parallel
 	{
-		cout << "hit1\n";
 		double lBuffer[LOCAL_BUFF_SIZE];
 		double lC = 0;
 		double lD = 0;
@@ -57,8 +56,7 @@ int main(int argc, char** argv)
 		bool lContinue = true;
 		while(lContinue)
 		{
-		
-			cout << "hit2\n";	
+			
 			// FOR DEBUGGING
 			debugCount++; 
 			if(debugCount == DEBUG_FREQ)
