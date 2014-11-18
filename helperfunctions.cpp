@@ -99,12 +99,12 @@ bool gSetMax(double fc, double fd)
 	bool ret = false; 
 	#pragma omp critical
 	{
-		if(gMax + E < fc)
+		if(gMax + EPSILON < fc)
 		{
 			gMax = fc;
 			ret = true;
 		}
-		if(gMax + E < fd)
+		if(gMax + EPSILON < fd)
 		{
 			gMax = fd;
 			ret = true;
