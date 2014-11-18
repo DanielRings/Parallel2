@@ -198,37 +198,29 @@ bool intervalIsValid(double currentMax, double c, double d)
 // Attempts to rid itself of a piece of the interval handed to it
 bool narrowInterval(double currentMax, double *c, double *d)
 {
-	// Save the original values
 	double C = *c; 
 	double D = *d; 
 	
-	// Shrink from the left side
+	// Left
 	while(intervalIsValid(currentMax, C, D))
 	{
 		//printf("stuck"); 
 		D = (D - C)/2 + C; 
 	}
-
-	//printf("\nNOT STUCK\n"); 	
 	*c = D;
 	C = D; 
 	D = *d; 	
 
-	// Shrink from the right side
+	// Right
 	while(intervalIsValid(currentMax, C, D))
 	{
 		C = (D - C)/2 + C; 
 	}
+	*d = C;
 
-	*d = C; 
-	//*c = retC; 
-	
-	//printf("Getting Out"); 
-	// THIS SHOULD CHECK IF FAILED OR NOT, SOMEHOW? 
 	return true;
 }
-
-// Returns space left in buffer 
+ 
 int spaceLeft(int bufferSize, int head, int tail, int status)
 {
 	if(status == 0)
@@ -244,20 +236,6 @@ int spaceLeft(int bufferSize, int head, int tail, int status)
 	}
 }
 
-// THIS VERSION ONLY WORKS WITH STACK VERSION OF q/deqWork
-/*int spaceLeft(int bufferSize, int head, int tail, int status)
-{
-	if(status == 0)
-		return bufferSize;
-	else if(status == 2)
-		return 0; 
-	else
-	{
-		return (LOCAL_BUFF_SIZE-(head - 2));
-	}
-}*/
-
-// Returns true if all processors are done
 bool allThreadsFinished(bool *threadsFinished, int size)
 {
 	for(int i=0; i<size; i++)
@@ -269,8 +247,6 @@ bool allThreadsFinished(bool *threadsFinished, int size)
 	return true; 
 }
 
-// Returns the amount of the remaining interval represented in the buffer 
-// as a percentage
 // FOR DEBUGGING
 double intervalLeft(double originalSize, double *buffer, int bufferSize, int head, int tail, int status)
 {
