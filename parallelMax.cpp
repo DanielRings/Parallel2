@@ -1,33 +1,13 @@
-// Tentative questions: 
-// In email, when describing f(x), the 3rd line is "z = x". Why isn't it z = 0? 
-// Try setting number of threads to 1.5X number of procs to do hyperthreading? 
-// ARE COMPILER OPTIMIZATIONS ALLOWED!?!?!? -O3? 
-// Change order by which elements are added to global buffer 
-// 	try to take elements from the from of queue rather than those that would have been 
-//	added to the back.
-
 #include "helperfunctions.h"
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
-	// if(argc != 3){
-	// 	cout << "Wrong number of arguments\n";
-	// 	return 0;
-	// }
-	// A = strtod(argv[1], NULL);
-	// B = strtod(argv[2], NULL);
-	// if(A >= B){
-	// 	cout << "Bad arguments\n";
-	// 	return 0;
-	// }
 	int threads = omp_get_num_procs();
 	omp_set_num_threads(threads);
 
 	double initialSplit = (B - A)/threads;
-
-	cout << "threads: " << threads << "\n";
 
 	gInitBuffer();
 	bool *gThreadsFinished = new bool[threads];
@@ -99,12 +79,11 @@ int main(int argc, char** argv)
 					
 					if(spaceLeft(LBUFFERSIZE, lHead, lTail, lStatus) == 2)
 					{
-						// Global buffer is full too - so we shrink the current interval instead of splitting it
+						// Global buffer is full too. Interval must be
+						// narrowed rather than cut in half (avoid if possible)
 						if(gStatus == 2)
 						{
-							// NEED TO FIX THIS FUNCTION BELOW
 							narrowInterval(gMax, &lC, &lD);
-							// Queue up shrunken interval back into local buffer
 							lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 						}
 						else 
