@@ -196,14 +196,14 @@ bool intervalIsValid(double currentMax, double c, double d, double s, double e)
 }
 
 // Attempts to rid itself of a piece of the interval handed to it
-bool narrowInterval(double currentMax, double *c, double *d)
+bool narrowInterval(double currentMax, double *c, double *d, double s, double e)
 {
 	// Save the original values
 	double C = *c; 
 	double D = *d; 
 	
 	// Shrink from the left side
-	while(intervalIsValid(currentMax, C, D))
+	while(intervalIsValid(currentMax, C, D, s, e))
 	{
 		//printf("stuck"); 
 		D = (D - C)/2 + C; 
@@ -215,7 +215,7 @@ bool narrowInterval(double currentMax, double *c, double *d)
 	D = *d; 	
 
 	// Shrink from the right side
-	while(intervalIsValid(currentMax, C, D))
+	while(intervalIsValid(currentMax, C, D, s, e))
 	{
 		C = (D - C)/2 + C; 
 	}
@@ -225,7 +225,7 @@ bool narrowInterval(double currentMax, double *c, double *d)
 	
 	//printf("Getting Out"); 
 	// THIS SHOULD CHECK IF FAILED OR NOT, SOMEHOW? 
-	return true; 
+	return true;
 }
 
 // Returns space left in buffer 

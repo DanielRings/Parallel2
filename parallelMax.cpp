@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 						if(gStatus == 2)
 						{
 							// NEED TO FIX THIS FUNCTION BELOW
-							narrowInterval(gMax, &lC, &lD);
+							narrowInterval(gMax, &lC, &lD, S, E);
 							// Queue up shrunken interval back into local buffer
 							lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 						}
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 							double pD2 = lD; 
 							if(!gWorkBuffer(FUN_DOUBLE_Q, &pC, &pD, pC2, pD2))
 							{
-								narrowInterval(gMax, &lC, &lD);
+								narrowInterval(gMax, &lC, &lD, S, E);
 								lWorkQueue(lC, lD, lBuffer, &lHead, &lTail, &lStatus); 
 							}
 								

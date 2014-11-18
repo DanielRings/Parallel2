@@ -54,7 +54,7 @@ bool lWorkDeque(double *c, double *d, double *buffer, int *head, int *tail, int 
 bool intervalIsValid(double currentMax, double c, double d, double s, double e);
 
 // Attempts to rid itself of a piece of the interval handed to it
-bool narrowInterval(double currentMax, double *c, double *d);
+bool narrowInterval(double currentMax, double *c, double *d, double s, double e);
 
 // Returns space left in buffer 
 int spaceLeft(int bufferSize, int head, int tail, int status);
