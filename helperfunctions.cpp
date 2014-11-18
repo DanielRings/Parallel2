@@ -2,8 +2,6 @@
 
 
 // Global Stuff
-double A;
-double B;
 double gMax; 
 double *gBuffer;
 int gHead; 
