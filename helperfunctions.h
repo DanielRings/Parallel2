@@ -7,8 +7,8 @@
 #include <math.h>
 #include <omp.h>
 
-#define GLOBAL_BUFF_SIZE 10000
-#define LOCAL_BUFF_SIZE 100
+#define GLOBAL_BUFF_SIZE 50000
+#define LOCAL_BUFF_SIZE 10
 #define DEBUG_FREQ 100
 
 // For global buffer 

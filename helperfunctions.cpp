@@ -97,12 +97,12 @@ bool gSetMax(double fc, double fd)
 	{
 		if(gMax + E < fc)
 		{
-			gMax = fc;
+			gMax = fc + E;
 			ret = true;
 		}
 		if(gMax + E < fd)
 		{
-			gMax = fd;
+			gMax = fd + E;
 			ret = true;
 		}
 	}
